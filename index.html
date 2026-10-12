@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#10110e">
+<meta name="description" content="SIDEQUEST.exe — Reality has unfinished missions. An open-source game that turns the real world into an evolving mystery.">
+<title>SIDEQUEST.exe — Reality has unfinished missions</title>
+<style>
+:root{--bg:#10110e;--panel:#191a16;--lime:#d4ff59;--muted:#999b90;--line:#33352c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#f4f4ec;font-family:Arial,Helvetica,sans-serif}
+button{font:inherit;cursor:pointer}
+header{padding:22px 7%;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}
+.logo{font-weight:900;letter-spacing:-1px}.logo span{color:var(--lime)}
+.status{font-size:11px;color:var(--lime);letter-spacing:1px}
+main{max-width:1100px;margin:auto;padding:64px 24px}
+.eyebrow{color:var(--lime);font-size:11px;letter-spacing:3px;text-transform:uppercase}
+h1{font-size:clamp(52px,10vw,110px);line-height:.88;letter-spacing:-7px;margin:26px 0}
+h1 span{color:var(--lime)}
+.intro{color:var(--muted);max-width:470px;line-height:1.8;font-size:15px}
+.layout{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-top:48px}
+.panel{background:var(--panel);border:1px solid var(--line);padding:26px;border-radius:5px}
+.panel-label{color:var(--muted);font-size:10px;letter-spacing:2px}
+.quest{min-height:300px;display:flex;flex-direction:column;justify-content:space-between}
+.quest h2{font-size:36px;letter-spacing:-1.5px;margin:22px 0 10px}
+.quest p{color:#b6b8ad;line-height:1.7}
+.primary{background:var(--lime);border:0;color:#14150f;padding:15px 19px;font-weight:800;width:100%;margin-top:22px}
+.primary:hover{background:#e6ff9d}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.stat{padding:20px 16px;background:#12130f;border:1px solid var(--line)}
+.number{font-size:32px;font-weight:800;color:var(--lime);margin:12px 0 5px}
+.small{font-size:12px;color:var(--muted)}
+.mission{padding:17px 0;border-bottom:1px solid var(--line)}
+.mission:last-child{border:0}
+.mission strong{font-size:14px}.mission p{font-size:12px;line-height:1.6;color:var(--muted)}
+.tag{display:inline-block;color:var(--lime);border:1px solid #49532e;padding:5px 8px;font-size:10px;margin-top:10px}
+footer{padding:25px 7%;border-top:1px solid var(--line);color:var(--muted);font-size:11px;display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}
+#toast{color:var(--lime);font-size:12px;margin-top:12px;min-height:18px}
+@media(max-width:700px){main{padding:45px 18px}header{padding:20px}h1{letter-spacing:-4px}.layout{grid-template-columns:1fr}.quest{min-height:280px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">SIDEQUEST<span>.exe</span></div>
+  <div class="status">● REALITY MODE: ON</div>
+</header>
+<main>
+  <div class="eyebrow">A game that exists outside your screen</div>
+  <h1>REALITY HAS<br>UNFINISHED<br><span>MISSIONS.</span></h1>
+  <p class="intro">Your neighborhood is an unexplored world. Ordinary objects are clues. Small adventures become a story only you can discover. Step outside. Find something strange.</p>
+  <div class="layout">
+    <section class="panel quest">
+      <div>
+        <div class="panel-label">YOUR NEXT ASSIGNMENT / 001</div>
+        <div class="tag" id="difficulty">EASY QUEST</div>
+        <h2 id="questTitle">The Pattern<br>That Wasn't There</h2>
+        <p id="questText">Step outside and find three ordinary objects that share one unexpected detail. Connect them in your mind. What could they mean together?</p>
+      </div>
+      <div>
+        <div class="small" id="reward">REWARD: +50 XP · ONE NEW DISCOVERY</div>
+        <button class="primary" id="complete">I COMPLETED THIS QUEST ↗</button>
+        <button class="primary" id="next" style="background:transparent;color:var(--lime);border:1px solid var(--line)">GENERATE ANOTHER QUEST ↻</button>
+        <div id="toast" aria-live="polite"></div>
+      </div>
+    </section>
+    <aside>
+      <section class="panel">
+        <div class="panel-label">YOUR PLAYER PROFILE</div>
+        <div class="stats">
+          <div class="stat"><div class="small">TOTAL EXPERIENCE</div><div class="number" id="xp">0</div><div class="small">XP EARNED</div></div>
+          <div class="stat"><div class="small">WORLD LEVEL</div><div class="number" id="level">01</div><div class="small">THE CURIOUS</div></div>
+          <div class="stat"><div class="small">QUESTS DONE</div><div class="number" id="done">0</div></div>
+          <div class="stat"><div class="small">CLUES FOUND</div><div class="number" id="clues">0</div></div>
+        </div>
+      </section>
+      <section class="panel" style="margin-top:14px">
+        <div class="panel-label">FIELD NOTES / YOUR LORE</div>
+        <div id="journal"><div class="mission"><strong>No stories yet.</strong><p>Your world begins when you complete your first quest.</p></div></div>
+      </section>
+    </aside>
+  </div>
+</main>
+<footer><span>SIDEQUEST.exe — AN OPEN-WORLD EXPERIMENT</span><span>GO OUTSIDE. THE STORY ISN'T ON THIS SCREEN.</span></footer>
+<script>
+const quests=[
+["The Pattern That Wasn't There","Find three ordinary objects sharing an unexpected detail. Connect them in your imagination.","EASY QUEST",50],
+["The Forgotten Witness","Find an object that looks like it has witnessed a hundred years of stories. What would it tell you?","OBSERVATION",60],
+["A Colour Out of Place","Choose one colour. Find five things around you wearing it. Which one seems like it doesn't belong?","EXPLORER",50],
+["The Tiny Civilization","Look closely at a patch of ground. Find signs of life or change you would normally walk straight past.","MICRO EXPLORER",75],
+["The Unfamiliar Turn","On a safe, accessible public route, take a turn you usually ignore. Discover one detail worth remembering.","EXPLORATION",80],
+["The Object With Two Lives","Find something ordinary and imagine two completely different stories explaining how it got there.","STORY QUEST",60],
+["Echoes of a Shape","Find a shape in nature, then discover that same shape in something human-made. What connects them?","PATTERN HUNTER",70]
+];
+let state;
+try{state=JSON.parse(localStorage.getItem("sidequest-state"))||{xp:0,done:0,clues:0,journal:[],completed:[]}}catch(e){state={xp:0,done:0,clues:0,journal:[],completed:[]}}
+let current=0;
+function save(){try{localStorage.setItem("sidequest-state",JSON.stringify(state))}catch(e){}}
+function render(){
+document.getElementById("xp").textContent=state.xp;
+document.getElementById("done").textContent=state.done;
+document.getElementById("clues").textContent=state.clues;
+document.getElementById("level").textContent=String(Math.floor(state.xp/200)+1).padStart(2,"0");
+document.getElementById("journal").innerHTML=state.journal.length?state.journal.slice().reverse().map(x=>`<div class="mission"><strong>${escapeHTML(x.title)}</strong><p>${escapeHTML(x.note)}</p><span class="tag">+${x.reward} XP</span></div>`).join(""):'<div class="mission"><strong>No stories yet.</strong><p>Your world begins when you complete your first quest.</p></div>';
+}
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function generate(){
+let options=quests.map((q,i)=>i).filter(i=>!state.completed.includes(i));
+if(!options.length){state.completed=[];options=quests.map((q,i)=>i)}
+current=options[Math.floor(Math.random()*options.length)];
+let q=quests[current];
+document.getElementById("questTitle").textContent=q[0];
+document.getElementById("questText").textContent=q[1];
+document.getElementById("difficulty").textContent=q[2];
+document.getElementById("reward").textContent=`REWARD: +${q[3]} XP · ONE NEW DISCOVERY`;
+document.getElementById("toast").textContent="A new mission awaits. The world is yours to explore.";
+}
+document.getElementById("next").addEventListener("click",generate);
+document.getElementById("complete").addEventListener("click",()=>{
+if(state.completed.includes(current)){document.getElementById("toast").textContent="You've already logged this quest. Find another clue.";return}
+let q=quests[current];state.xp+=q[3];state.done++;state.clues++;
+state.completed.push(current);
+state.journal.push({title:q[0],note:"Quest logged by you. Add your real-world observations to the next version of your field journal.",reward:q[3]});
+save();render();
+document.getElementById("toast").textContent=`QUEST LOGGED. +${q[3]} XP. Your world grows.`;
+});
+render();
+</script>
+</body>
+</html>
