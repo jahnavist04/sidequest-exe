@@ -1,0 +1,142 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Clue Web — SIDEQUEST.exe</title>
+<style>
+:root{--bg:#10110e;--panel:#191a16;--lime:#d4ff59;--muted:#9b9d91;--line:#383a30}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#f5f5ed;font:14px Arial,sans-serif}
+header{padding:22px 6%;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+a{color:var(--lime);text-decoration:none}
+main{max-width:1150px;margin:auto;padding:45px 22px}
+.eyebrow{font-size:10px;letter-spacing:3px;color:var(--lime)}
+h1{font-size:clamp(44px,8vw,80px);letter-spacing:-4px;margin:20px 0}
+p{color:var(--muted);line-height:1.7}
+.layout{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-top:35px}
+.panel{background:var(--panel);border:1px solid var(--line);padding:20px;border-radius:5px;min-width:0}
+canvas{width:100%;height:400px;display:block;cursor:pointer}
+.label{font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:15px}
+input,button{font:inherit;padding:12px;background:#11120f;color:#f5f5ed;border:1px solid var(--line);border-radius:3px}
+input{width:100%;margin-bottom:10px}
+button{cursor:pointer}
+button:hover{border-color:var(--lime);color:var(--lime)}
+.primary{background:var(--lime);color:#15160f;font-weight:bold;border-color:var(--lime);width:100%}
+.primary:hover{background:#e6ff9d;color:#15160f}
+#detail{min-height:100px}
+.nodeitem{border-top:1px solid var(--line);padding:13px 0}
+.nodeitem strong{display:block;margin-bottom:6px}
+.nodeitem span{color:var(--muted);font-size:12px}
+.note{font-size:11px;margin-top:20px}
+@media(max-width:760px){.layout{grid-template-columns:1fr}canvas{height:330px}h1{letter-spacing:-2px}}
+</style>
+</head>
+<body>
+<header>
+<strong>SIDEQUEST<span style="color:var(--lime)">.exe</span></strong>
+<a href="./index.html">← BACK TO THE WORLD</a>
+</header>
+<main>
+<div class="eyebrow">FIELD ARCHIVE / EXPERIMENT 002</div>
+<h1>THE CLUE<br><span style="color:var(--lime)">WEB.</span></h1>
+<p>Every discovery leaves a trace. Every trace might connect to something else.<br>Your world is a mystery waiting to take shape.</p>
+<div class="layout">
+<section class="panel">
+<div class="label">YOUR DISCOVERIES / SELECT A NODE</div>
+<canvas id="web" aria-label="Interactive graph of your discoveries"></canvas>
+<div class="note">Solid lines represent shared themes, not proof of a real-world connection.</div>
+</section>
+<section class="panel">
+<div class="label">CLUE INTELLIGENCE</div>
+<div id="detail"><p>Select a node to investigate its place in your world.</p></div>
+<div style="height:1px;background:var(--line);margin:20px 0"></div>
+<div class="label">ADD A FIELD NOTE</div>
+<form id="form">
+<input id="title" maxlength="55" placeholder="Discovery title" required>
+<input id="theme" maxlength="30" placeholder="Theme (e.g. circles)" required>
+<input id="observation" maxlength="180" placeholder="What did you actually observe?" required>
+<button class="primary" type="submit">ADD DISCOVERY +</button>
+</form>
+<p class="note">Record only what you observe. Keep fictional interpretations separate from real evidence.</p>
+<button id="reset" style="width:100%">RESET DEMO DATA</button>
+</section>
+</div>
+<section class="panel" style="margin-top:16px">
+<div class="label">THE ARCHIVE</div>
+<div id="archive"></div>
+</section>
+</main>
+<script>
+const canvas=document.getElementById("web"),ctx=canvas.getContext("2d");
+const seed=[
+{id:1,title:"The Rusted Witness",theme:"time",observation:"A weathered metal surface.",fiction:"In the fictional lore, this object has watched generations pass."},
+{id:2,title:"Three Quiet Circles",theme:"shapes",observation:"Three circular forms found in everyday surroundings.",fiction:"In the fictional lore, circles represent forgotten boundaries."},
+{id:3,title:"The Green Echo",theme:"color",observation:"A similar green shade appeared in two places.",fiction:"In the fictional lore, the color marks a path."},
+{id:4,title:"A Missing Arrow",theme:"shapes",observation:"An arrow-shaped detail noticed outdoors.",fiction:"In the fictional lore, this points toward an unanswered question."}
+];
+let clues;
+try{clues=JSON.parse(localStorage.getItem("sidequest-clues"))||seed}catch(e){clues=seed}
+let selected=null,nodes=[];
+function save(){try{localStorage.setItem("sidequest-clues",JSON.stringify(clues))}catch(e){}}
+function resize(){
+const r=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+canvas.width=r.width*dpr;canvas.height=r.height*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);draw();
+}
+function draw(){
+const w=canvas.clientWidth,h=canvas.clientHeight;
+ctx.clearRect(0,0,w,h);nodes=[];
+const count=clues.length;
+clues.forEach((c,i)=>{
+const angle=(i/count)*Math.PI*2-Math.PI/2;
+nodes.push({x:w/2+Math.cos(angle)*Math.min(w*.34,145),y:h/2+Math.sin(angle)*Math.min(h*.32,125),clue:c});
+});
+for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
+const a=nodes[i],b=nodes[j];
+if(a.clue.theme.toLowerCase()===b.clue.theme.toLowerCase()){
+ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle="#8da344";ctx.globalAlpha=.8;ctx.lineWidth=1.5;ctx.stroke();ctx.globalAlpha=1;
+}}
+nodes.forEach(n=>{
+ctx.beginPath();ctx.arc(n.x,n.y,selected===n.clue.id?9:6,0,Math.PI*2);
+ctx.fillStyle=selected===n.clue.id?"#f5f5ed":"#d4ff59";ctx.fill();
+ctx.strokeStyle="#d4ff59";ctx.stroke();
+ctx.font="11px Arial";ctx.fillStyle="#d8d9ce";
+ctx.fillText(n.clue.title.slice(0,19),Math.min(w-110,n.x+12),n.y-10);
+});
+}
+function render(){
+document.getElementById("archive").innerHTML=clues.map(c=>`<div class="nodeitem"><strong>${escapeHTML(c.title)}</strong><span>THEME: ${escapeHTML(c.theme)} · ${escapeHTML(c.observation)}</span></div>`).join("")||"<p>No discoveries recorded yet.</p>";
+if(selected&&!clues.some(c=>c.id===selected))selected=null;
+if(selected)show(clues.find(c=>c.id===selected));
+draw();
+}
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function show(c){
+if(!c)return;
+selected=c.id;
+const linked=clues.filter(x=>x.id!==c.id&&x.theme.toLowerCase()===c.theme.toLowerCase());
+document.getElementById("detail").innerHTML=`<h2>${escapeHTML(c.title)}</h2><p>${escapeHTML(c.observation)}</p><div class="label">OBSERVED THEME</div><p>${escapeHTML(c.theme)}</p><div class="label">FICTIONAL INTERPRETATION</div><p>${escapeHTML(c.fiction||"No fictional lore assigned yet.")}</p><div class="label">RELATED CLUES</div><p>${linked.length?linked.map(x=>escapeHTML(x.title)).join(" · "):"No shared themes discovered yet. Add more field notes."}</p>`;
+draw();
+}
+canvas.addEventListener("click",e=>{
+const r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;
+const hit=nodes.find(n=>Math.hypot(n.x-x,n.y-y)<18);
+if(hit)show(hit.clue);
+});
+document.getElementById("form").addEventListener("submit",e=>{
+e.preventDefault();
+const title=document.getElementById("title").value.trim(),theme=document.getElementById("theme").value.trim(),observation=document.getElementById("observation").value.trim();
+if(!title||!theme||!observation)return;
+const c={id:Date.now(),title,theme,observation,fiction:"This discovery is awaiting a fictional interpretation."};
+clues.push(c);selected=c.id;save();e.target.reset();render();show(c);
+});
+document.getElementById("reset").addEventListener("click",()=>{
+if(!confirm("Reset your clue archive to the original demo data?"))return;
+clues=seed.map(c=>({...c}));selected=null;save();render();
+});
+window.addEventListener("resize",resize);
+render();resize();
+</script>
+</body>
+</html>
